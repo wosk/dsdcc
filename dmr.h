@@ -140,6 +140,7 @@ private:
     void processDataFirstHalfMS();
 
     void BasicPrivacyXOR(unsigned char *dibit, int pos);
+    void DumpData(const char *name, void *Data, int size);
 
     DSDDecoder *m_dsdDecoder;
     int  m_symbolIndex;                   //!< current symbol index in non HD sequence

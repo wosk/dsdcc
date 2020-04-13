@@ -650,6 +650,21 @@ void DSDDMR::BasicPrivacyXOR(unsigned char *dibit, int index)
     *dibit = out;
 }
 
+void DSDDMR::DumpData(const char *name, void *Data, int size)
+{
+    if(m_dsdDecoder->m_opts.verbose < 2)
+        return;
+
+    int i;
+    unsigned char *ptr = (unsigned char*)Data;
+
+    fprintf(stderr, "%s (%d B):\n\r", name, size);
+    for (i=0; i <size; i++) {
+        fprintf(stderr, "%02x ", ptr[i]);
+    }
+    fprintf(stderr, "\n\r");
+}
+
 void DSDDMR::processVoiceDibit(unsigned char dibit)
 {
     int nextPartOff = IN_DIBITS(DMR_CACH_LEN);
@@ -727,11 +742,13 @@ void DSDDMR::processVoiceDibit(unsigned char dibit)
             {
                 m_dsdDecoder->m_mbeDecoder1.processFrame(0, m_dsdDecoder->ambe_fr, 0);
                 m_dsdDecoder->m_mbeDVReady1 = true; // Indicate that a DVSI frame is available
+                DumpData("VOX1", m_dsdDecoder->m_mbeDVFrame1, IN_BYTES(DMR_VOCODER_FRAME_LEN));
             }
             else if (m_slot == DSDDMRSlot2)
             {
                 m_dsdDecoder->m_mbeDecoder2.processFrame(0, m_dsdDecoder->ambe_fr, 0);
                 m_dsdDecoder->m_mbeDVReady2 = true; // Indicate that a DVSI frame is available
+                DumpData("VOX1", m_dsdDecoder->m_mbeDVFrame2, IN_BYTES(DMR_VOCODER_FRAME_LEN));
             }
         }
         return;
@@ -851,12 +868,14 @@ void DSDDMR::processVoiceDibit(unsigned char dibit)
                 m_dsdDecoder->m_mbeDecoder1.processFrame(0, m_dsdDecoder->ambe_fr, 0);
                 memcpy(m_dsdDecoder->m_mbeDVFrame1, m_mbeDVFrame, IN_BYTES(DMR_VOCODER_FRAME_LEN));
                 m_dsdDecoder->m_mbeDVReady1 = true; // Indicate that a DVSI frame is available
+                DumpData("VOX2", m_dsdDecoder->m_mbeDVFrame1, IN_BYTES(DMR_VOCODER_FRAME_LEN));
             }
             else if (m_slot == DSDDMRSlot2)
             {
                 m_dsdDecoder->m_mbeDecoder2.processFrame(0, m_dsdDecoder->ambe_fr, 0);
                 memcpy(m_dsdDecoder->m_mbeDVFrame2, m_mbeDVFrame, IN_BYTES(DMR_VOCODER_FRAME_LEN));
                 m_dsdDecoder->m_mbeDVReady2 = true; // Indicate that a DVSI frame is available
+                DumpData("VOX2", m_dsdDecoder->m_mbeDVFrame2, IN_BYTES(DMR_VOCODER_FRAME_LEN));
             }
         }
         return;
@@ -904,11 +923,13 @@ void DSDDMR::processVoiceDibit(unsigned char dibit)
             {
                 m_dsdDecoder->m_mbeDecoder1.processFrame(0, m_dsdDecoder->ambe_fr, 0);
                 m_dsdDecoder->m_mbeDVReady1 = true; // Indicate that a DVSI frame is available
+                DumpData("VOX3", m_dsdDecoder->m_mbeDVFrame1, IN_BYTES(DMR_VOCODER_FRAME_LEN));
             }
             else if (m_slot == DSDDMRSlot2)
             {
                 m_dsdDecoder->m_mbeDecoder2.processFrame(0, m_dsdDecoder->ambe_fr, 0);
                 m_dsdDecoder->m_mbeDVReady2 = true; // Indicate that a DVSI frame is available
+                DumpData("VOX3", m_dsdDecoder->m_mbeDVFrame2, IN_BYTES(DMR_VOCODER_FRAME_LEN));
             }
         }
         return;
@@ -989,9 +1010,8 @@ void DSDDMR::processSlotTypePDU()
         {
             m_dataType = (DSDDMRDataTYpe) dataType;
             memcpy(&m_slotText[4], m_slotTypeText[dataType], 3);
+            std::cerr << "DSDDMR::processSlotTypePDU OK: CC: " << (int) m_colorCode << " DT: " << m_slotTypeText[dataType] << std::endl;
         }
-
-//        std::cerr << "DSDDMR::processSlotTypePDU OK: CC: " << (int) m_colorCode << " DT: " << dataType << std::endl;
     }
     else
     {
@@ -1139,10 +1159,10 @@ bool DSDDMR::processVoiceEmbeddedSignalling(int& voiceEmbSig_dibitsIndex,
 
 void DSDDMR::storeSymbolDV(unsigned char *mbeFrame, int dibitindex, unsigned char dibit, bool invertDibit)
 {
-    if (m_dsdDecoder->m_mbelibEnable)
-    {
-        return;
-    }
+    // if (m_dsdDecoder->m_mbelibEnable)
+    // {
+    //     return;
+    // }
 
     if (invertDibit)
     {
